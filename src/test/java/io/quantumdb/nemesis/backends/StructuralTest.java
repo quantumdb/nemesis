@@ -34,7 +34,7 @@ public class StructuralTest {
 	}
 
 	private static String get(String envKey, String defaultValue) {
-		String envValue = System.getProperty(envKey);
+		String envValue = System.getenv(envKey);
 		if (Strings.isNullOrEmpty(envValue)) {
 			return defaultValue;
 		}
