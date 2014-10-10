@@ -5,8 +5,8 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.quantumdb.nemesis.backends.DatabaseBackend;
-import io.quantumdb.nemesis.backends.DatabaseCredentials;
+import io.quantumdb.nemesis.structure.Database;
+import io.quantumdb.nemesis.structure.DatabaseCredentials;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ public abstract class Worker implements Runnable {
 	
 	private final AtomicBoolean running = new AtomicBoolean();
 	
-	private final DatabaseBackend backend;
+	private final Database backend;
 	private final DatabaseCredentials credentials;
 	private final Writer writer;
 	private final long startingTimestamp;
@@ -28,7 +28,7 @@ public abstract class Worker implements Runnable {
 		try {
 			backend.connect(credentials);
 		} 
-		catch (SQLException | ClassNotFoundException e) {
+		catch (SQLException e) {
 			log.error(e.getMessage(), e);
 			return;
 		}

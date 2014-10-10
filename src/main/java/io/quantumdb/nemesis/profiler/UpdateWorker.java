@@ -4,8 +4,8 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Random;
 
-import io.quantumdb.nemesis.backends.DatabaseBackend;
-import io.quantumdb.nemesis.backends.DatabaseCredentials;
+import io.quantumdb.nemesis.structure.Database;
+import io.quantumdb.nemesis.structure.DatabaseCredentials;
 
 
 public class UpdateWorker extends Worker {
@@ -13,10 +13,10 @@ public class UpdateWorker extends Worker {
 	private static final String QUERY = "UPDATE %s SET name = 'Dilbert' WHERE id = %d";
 
 	private final Random random;
-	private final DatabaseBackend backend;
+	private final Database backend;
 	private final String tableName;
 	
-	public UpdateWorker(DatabaseBackend backend, DatabaseCredentials credentials, Writer writer,
+	public UpdateWorker(Database backend, DatabaseCredentials credentials, Writer writer,
 			long startingTimestamp, String tableName) {
 
 		super(backend, credentials, writer, startingTimestamp);

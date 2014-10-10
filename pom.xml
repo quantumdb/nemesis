@@ -17,6 +17,7 @@
 	</properties>
 
 	<dependencies>
+		<!-- Language extensions -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -28,6 +29,7 @@
 			<version>17.0</version>
 		</dependency>
 
+		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -43,6 +45,8 @@
 			<artifactId>jul-to-slf4j</artifactId>
 			<version>1.7.6</version>
 		</dependency>
+
+		<!-- Database drivers -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -52,6 +56,13 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.33</version>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
 		</dependency>
 	</dependencies>
 

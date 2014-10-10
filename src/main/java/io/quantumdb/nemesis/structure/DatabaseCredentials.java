@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.backends;
+package io.quantumdb.nemesis.structure;
 
 import lombok.Data;
 

@@ -1,7 +1,11 @@
-package io.quantumdb.nemesis.backends;
+package io.quantumdb.nemesis.profiler;
 
 import java.util.Random;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RandomNameGenerator {
 
 	private static final Random RANDOM = new Random();
