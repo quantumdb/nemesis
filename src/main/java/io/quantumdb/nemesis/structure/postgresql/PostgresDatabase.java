@@ -71,7 +71,16 @@ public class PostgresDatabase implements Database {
 
 	@Override
 	public List<Sequence> listSequences() throws SQLException {
-		return PostgresSequence.listSequences(connection, this);
+		List<Sequence> sequences = Lists.newArrayList();
+		try (Statement statement = connection.createStatement()) {
+			ResultSet resultSet = statement.executeQuery("SELECT c.relname AS name FROM pg_class c WHERE c.relkind = 'S';");
+
+			while (resultSet.next()) {
+				String name = resultSet.getString("name");
+				sequences.add(new PostgresSequence(this, name));
+			}
+		}
+		return sequences;
 	}
 
 	@Override

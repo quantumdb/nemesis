@@ -202,12 +202,36 @@ public class PostgresTable implements Table {
 
 	@Override
 	public List<Constraint> listConstraints() throws SQLException {
-		return PostgresConstraint.listConstraints(connection, this);
+		String query = new QueryBuilder()
+				.append("SELECT tc.constraint_name, tc.constraint_type, kc.column_name ")
+				.append("FROM information_schema.table_constraints tc ")
+				.append("LEFT JOIN information_schema.key_column_usage kc ")
+				.append("    ON kc.table_name = tc.table_name AND kc.table_schema = tc.table_schema ")
+				.append("WHERE tc.table_schema = ? AND tc.table_name = ?")
+				.toString();
+
+		List<Constraint> constraints = Lists.newArrayList();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			statement.setString(1, "public");
+			statement.setString(2, name);
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+				String constraintName = resultSet.getString("constraint_name");
+				String constraintType = resultSet.getString("constraint_type");
+				String columnName = resultSet.getString("column_name");
+
+				constraints.add(new PostgresConstraint(this, constraintName, constraintType, columnName));
+			}
+		}
+		return constraints;
 	}
 
 	@Override
 	public Constraint createConstraint(String name, String type, String expression) throws SQLException {
-		return PostgresConstraint.createConstraint(this, name, type, expression);
+		String query = String.format("ALTER TABLE %s ADD CONSTRAINT %s %s %s", this.name, name, type, expression);
+		getParent().execute(query);
+		return new PostgresConstraint(this, name, type, expression);
 	}
 
 	@Override
