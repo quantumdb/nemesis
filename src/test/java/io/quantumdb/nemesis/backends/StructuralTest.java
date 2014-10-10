@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
 import io.quantumdb.nemesis.structure.Database;
 import io.quantumdb.nemesis.structure.DatabaseCredentials;
@@ -27,8 +28,17 @@ public class StructuralTest {
 	@Parameterized.Parameters(name = "{index} - {0}")
 	public static List<Object[]> listParameters() {
 		return Arrays.asList(new Object[][] {
-				{ new PostgresDatabase(), "jdbc:postgresql://localhost/profiler", "profiler", "profiler" }
+				{ new PostgresDatabase(), "jdbc:postgresql://localhost/profiler",
+						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler") }
 		});
+	}
+
+	private static String get(String envKey, String defaultValue) {
+		String envValue = System.getProperty(envKey);
+		if (Strings.isNullOrEmpty(envValue)) {
+			return defaultValue;
+		}
+		return envValue;
 	}
 
 	private final Database database;

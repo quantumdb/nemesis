@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.google.common.base.Strings;
 import io.quantumdb.nemesis.profiler.DatabaseStructure;
 import io.quantumdb.nemesis.profiler.Profiler;
 import io.quantumdb.nemesis.profiler.ProfilerConfig;
@@ -22,9 +23,18 @@ public class BackendTest {
 	@Parameterized.Parameters(name = "{index}: type={0}")
 	public static Collection<?> getBackends() {
 		return Arrays.asList(new Object[][] {
-				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler", "profiler", "profiler")}
+				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
+						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler"))}
 //				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis", "root", "root")}
 		});
+	}
+
+	private static String get(String envKey, String defaultValue) {
+		String envValue = System.getProperty(envKey);
+		if (Strings.isNullOrEmpty(envValue)) {
+			return defaultValue;
+		}
+		return envValue;
 	}
 
 	private final Database.Type type;
