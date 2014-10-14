@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.postgresql;
+package io.quantumdb.nemesis.structure.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,13 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString
 @EqualsAndHashCode
-public class PostgresDatabase implements Database {
+public class MysqlDatabase implements Database {
 
 	private Connection connection;
 
 	public void connect(DatabaseCredentials credentials) throws SQLException {
 		try {
-			Class.forName("org.postgresql.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 			this.connection = DriverManager.getConnection(credentials.getUrl(),
 					credentials.getUsername(), credentials.getPassword());
 		}
@@ -46,29 +46,28 @@ public class PostgresDatabase implements Database {
 
 	@Override
 	public boolean supports(Feature feature) {
-		// PostgreSQL is just awesome...
-		return true;
+		switch (feature) {
+			case COLUMN_CONSTRAINTS:
+			case DEFAULT_VALUE_FOR_TEXT:
+			case MULTIPLE_AUTO_INCREMENT_COLUMNS:
+			case RENAME_INDEX:
+				return false;
+			default:
+				return true;
+		}
 	}
 
 	@Override
 	public List<Table> listTables() throws SQLException {
-		String query = new QueryBuilder()
-				.append("SELECT DISTINCT(table_name) AS table_name ")
-				.append("FROM information_schema.columns ")
-				.append("WHERE table_schema = ? ")
-				.append("ORDER BY table_name ASC")
-				.toString();
-
+		String query = "SHOW TABLES";
 		List<Table> tables = Lists.newArrayList();
 		try (PreparedStatement statement = connection.prepareStatement(query)) {
-			statement.setString(1, "public");
-
 			log.debug(query);
-			ResultSet resultSet = statement.executeQuery();
 
+			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
-				String tableName = resultSet.getString("table_name");
-				tables.add(new PostgresTable(connection, this, tableName));
+				String tableName = resultSet.getString(1);
+				tables.add(new MysqlTable(connection, this, tableName));
 			}
 		}
 
@@ -77,22 +76,21 @@ public class PostgresDatabase implements Database {
 
 	@Override
 	public List<Sequence> listSequences() throws SQLException {
-		List<Sequence> sequences = Lists.newArrayList();
-		try (Statement statement = connection.createStatement()) {
-			ResultSet resultSet = statement.executeQuery("SELECT c.relname AS name FROM pg_class c WHERE c.relkind = 'S';");
-
-			while (resultSet.next()) {
-				String name = resultSet.getString("name");
-				sequences.add(new PostgresSequence(this, name));
-			}
-		}
-		return sequences;
+		// MySQL doesn't support sequences...?!?
+		return Lists.newArrayList();
 	}
 
 	@Override
 	public void dropContents() throws SQLException {
-		for (Table table : listTables()) {
-			table.drop();
+		while (!listTables().isEmpty()) {
+			for (Table table : listTables()) {
+				try {
+					table.drop();
+				}
+				catch (SQLException e) {
+					log.warn(e.getMessage(), e);
+				}
+			}
 		}
 		for (Sequence sequence : listSequences()) {
 			sequence.drop();
@@ -119,9 +117,7 @@ public class PostgresDatabase implements Database {
 			}
 
 			if (column.isAutoIncrement()) {
-				queryBuilder.append(" DEFAULT NEXTVAL('" + table.getName() + "_" + column.getName() + "_seq')");
-
-				execute("CREATE SEQUENCE " + table.getName() + "_" + column.getName() + "_seq;");
+				queryBuilder.append(" AUTO_INCREMENT");
 			}
 			else if (!Strings.isNullOrEmpty(column.getDefaultExpression())) {
 				queryBuilder.append(" DEFAULT " + column.getDefaultExpression());
@@ -133,14 +129,7 @@ public class PostgresDatabase implements Database {
 		queryBuilder.append(")");
 		execute(queryBuilder.toString());
 
-		for (ColumnDefinition column : table.getColumns()) {
-			if (column.isAutoIncrement()) {
-				execute("ALTER SEQUENCE " + table.getName() + "_" + column.getName() + "_seq"
-						+ " OWNED BY " + table.getName() + "." + column.getName() + ";");
-			}
-		}
-
-		return new PostgresTable(connection, this, table.getName());
+		return new MysqlTable(connection, this, table.getName());
 	}
 
 	void execute(String query) throws SQLException {

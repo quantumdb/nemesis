@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.postgresql;
+package io.quantumdb.nemesis.structure.mysql;
 
 import java.sql.SQLException;
 
@@ -10,12 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString
 @EqualsAndHashCode
-class PostgresSequence implements Sequence {
+class MysqlSequence implements Sequence {
 
-	private final PostgresDatabase parent;
+	private final MysqlDatabase parent;
 	private final String name;
 
-	PostgresSequence(PostgresDatabase parent, String name) {
+	MysqlSequence(MysqlDatabase parent, String name) {
 		this.parent = parent;
 		this.name = name;
 	}
@@ -26,7 +26,7 @@ class PostgresSequence implements Sequence {
 	}
 
 	@Override
-	public PostgresDatabase getParent() {
+	public MysqlDatabase getParent() {
 		return parent;
 	}
 

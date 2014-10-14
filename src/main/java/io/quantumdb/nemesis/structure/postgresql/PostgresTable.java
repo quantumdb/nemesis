@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.structure.Column;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
 import io.quantumdb.nemesis.structure.Constraint;
+import io.quantumdb.nemesis.structure.ForeignKey;
 import io.quantumdb.nemesis.structure.Index;
 import io.quantumdb.nemesis.structure.QueryBuilder;
 import io.quantumdb.nemesis.structure.Sequence;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString
 @EqualsAndHashCode
-public class PostgresTable implements Table {
+class PostgresTable implements Table {
 
 	private final Connection connection;
 	private final PostgresDatabase parent;
@@ -235,11 +236,41 @@ public class PostgresTable implements Table {
 	}
 
 	@Override
-	public void addForeignKey(String constraint, String[] columns, String referencedTable, String[] referencedColumns)
+	public List<ForeignKey> listForeignKeys() throws SQLException {
+		String query = new QueryBuilder()
+				.append("SELECT ")
+				.append("    tc.constraint_name ")
+				.append("FROM ")
+				.append("    information_schema.table_constraints AS tc ")
+				.append("    JOIN information_schema.key_column_usage AS kcu ")
+				.append("      ON tc.constraint_name = kcu.constraint_name ")
+				.append("    JOIN information_schema.constraint_column_usage AS ccu ")
+				.append("      ON ccu.constraint_name = tc.constraint_name ")
+				.append("WHERE constraint_type = 'FOREIGN KEY' AND tc.table_schema = ? AND tc.table_name = ?;")
+				.toString();
+
+		List<ForeignKey> foreignKeys = Lists.newArrayList();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			statement.setString(1, "public");
+			statement.setString(2, name);
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+				String constraintName = resultSet.getString("constraint_name");
+				foreignKeys.add(new PostgresForeignKey(this, constraintName));
+			}
+		}
+		return foreignKeys;
+	}
+
+	@Override
+	public PostgresForeignKey addForeignKey(String constraint, String[] columns, String referencedTable, String[] referencedColumns)
 			throws SQLException {
 
 		execute(String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)", name, constraint,
 				Joiner.on(',').join(columns), referencedTable, Joiner.on(',').join(referencedColumns)));
+
+		return new PostgresForeignKey(this, constraint);
 	}
 
 	@Override

@@ -39,6 +39,14 @@ public class Session {
 		ScheduledThreadPoolExecutor executor = null;
 		Database backend = type.createBackend();
 
+		if (!operation.isSupportedBy(backend)) {
+			log.warn("Database: {} does not support operation: {}", backend, operation.getName());
+			return null;
+		}
+
+		List<Worker> workers = Lists.newArrayList();
+		List<Writer> writers = Lists.newArrayList();
+
 		try {
 			executor = new ScheduledThreadPoolExecutor(config.getTotalWorkers());
 
@@ -51,9 +59,6 @@ public class Session {
 			folder.mkdirs();
 
 			long start = System.currentTimeMillis();
-
-			List<Writer> writers = Lists.newArrayList();
-			List<Worker> workers = Lists.newArrayList();
 
 			Writer opWriter = new FileWriter(new File(folder, "OPERATION.log"));
 			writers.add(opWriter);
@@ -100,7 +105,8 @@ public class Session {
 			opWriter.flush();
 
 			sleep(teardownTimeout);
-
+		}
+		finally {
 			workers.stream().forEach(c -> c.stop());
 
 			executor.shutdown();
@@ -112,10 +118,12 @@ public class Session {
 				writer.close();
 			}
 
-			operation.cleanup(backend);
-		}
-		finally {
-			backend.close();
+			try {
+				operation.cleanup(backend);
+			}
+			finally {
+				backend.close();
+			}
 		}
 
 		log.info("\tDone benchmarking: {}", operation.getName());

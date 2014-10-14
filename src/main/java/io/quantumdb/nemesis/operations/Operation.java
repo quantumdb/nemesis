@@ -12,4 +12,8 @@ public interface Operation {
 	
 	default void cleanup(Database backend) throws SQLException {};
 
+	default boolean isSupportedBy(Database backend) {
+		return true;
+	}
+
 }

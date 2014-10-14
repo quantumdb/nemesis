@@ -65,7 +65,23 @@ public interface Table {
 
 	Constraint createConstraint(String name, String type, String expression) throws SQLException;
 
-	void addForeignKey(String constraint, String[] columns, String referencedTable, String[] referencedColumns)
+	List<ForeignKey> listForeignKeys() throws SQLException;
+
+	default ForeignKey getForeignKey(String name) throws SQLException {
+		return listForeignKeys().stream()
+				.filter(fk -> fk.getName().equals(name))
+				.findFirst()
+				.orElseThrow(() -> new SQLException("Could not find foreign key: " + name));
+	}
+
+	default boolean hasForeignKey(String name) throws SQLException {
+		return listForeignKeys().stream()
+				.filter(fk -> fk.getName().equals(name))
+				.findAny()
+				.isPresent();
+	}
+
+	ForeignKey addForeignKey(String constraint, String[] columns, String referencedTable, String[] referencedColumns)
 			throws SQLException;
 
 	void drop() throws SQLException;

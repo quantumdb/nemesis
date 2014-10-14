@@ -24,8 +24,9 @@ public class BackendTest {
 	public static Collection<?> getBackends() {
 		return Arrays.asList(new Object[][] {
 				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
-						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler"))}
-//				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis", "root", "root")}
+						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler"))},
+				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) }
 		});
 	}
 
