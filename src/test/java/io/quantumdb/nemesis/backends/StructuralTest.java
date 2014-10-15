@@ -10,10 +10,10 @@ import io.quantumdb.nemesis.structure.Database;
 import io.quantumdb.nemesis.structure.DatabaseCredentials;
 import io.quantumdb.nemesis.structure.Table;
 import io.quantumdb.nemesis.structure.TableDefinition;
-import io.quantumdb.nemesis.structure.postgresql.PostgresDatabase;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,8 +28,10 @@ public class StructuralTest {
 	@Parameterized.Parameters(name = "{index} - {0}")
 	public static List<Object[]> listParameters() {
 		return Arrays.asList(new Object[][] {
-				{ new PostgresDatabase(), "jdbc:postgresql://localhost/profiler",
-						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler") }
+				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
+						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler")) },
+				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) }
 		});
 	}
 
@@ -42,20 +44,15 @@ public class StructuralTest {
 	}
 
 	private final Database database;
-	private final String url;
-	private final String user;
-	private final String pass;
+	private final DatabaseCredentials credentials;
 
-	public StructuralTest(Database database, String url, String user, String pass) {
-		this.database = database;
-		this.url = url;
-		this.user = user;
-		this.pass = pass;
+	public StructuralTest(Database.Type type, DatabaseCredentials credentials) {
+		this.database = type.createBackend();
+		this.credentials = credentials;
 	}
 
 	@Before
 	public void setUp() throws SQLException {
-		DatabaseCredentials credentials = new DatabaseCredentials(url, user, pass);
 		database.connect(credentials);
 		database.dropContents();
 	}
@@ -126,7 +123,10 @@ public class StructuralTest {
 
 	@Test
 	public void testAddingAutoIncrementColumn() throws SQLException {
+		Assume.assumeTrue(database.supports(Database.Feature.MULTIPLE_AUTO_INCREMENT_COLUMNS));
+
 		testTableCreation();
+
 		database.getTable(TABLE_NAME).addColumn(new ColumnDefinition("sequence_number", "bigint")
 				.setAutoIncrement(true)
 				.setNullable(false));
@@ -141,11 +141,13 @@ public class StructuralTest {
 		testTableCreation();
 		database.getTable(TABLE_NAME).addColumn(new ColumnDefinition("blocked", "boolean")
 				.setNullable(false)
-				.setDefaultExpression("'false'"));
+				.setDefaultExpression("FALSE"));
 
-		Assert.assertEquals("false", database.getTable(TABLE_NAME)
+		String defaultExpression = database.getTable(TABLE_NAME)
 				.getColumn("blocked")
-				.getDefaultExpression());
+				.getDefaultExpression();
+
+		Assert.assertTrue("false".equals(defaultExpression) || "0".equals(defaultExpression));
 	}
 
 	@Test
@@ -221,6 +223,8 @@ public class StructuralTest {
 
 	@Test
 	public void testCreatingConstraint() throws SQLException {
+		Assume.assumeTrue(database.supports(Database.Feature.COLUMN_CONSTRAINTS));
+
 		testTableCreation();
 
 		database.getTable(TABLE_NAME)
@@ -236,6 +240,8 @@ public class StructuralTest {
 
 	@Test
 	public void testDroppingConstraint() throws SQLException {
+		Assume.assumeTrue(database.supports(Database.Feature.COLUMN_CONSTRAINTS));
+
 		testCreatingConstraint();
 
 		database.getTable(TABLE_NAME)
@@ -279,7 +285,10 @@ public class StructuralTest {
 
 	@Test
 	public void testRenamingIndex() throws SQLException {
+		Assume.assumeTrue(database.supports(Database.Feature.RENAME_INDEX));
+
 		testCreatingNonUniqueIndex();
+
 		database.getTable(TABLE_NAME)
 				.getIndex("test_name_idx")
 				.rename("test_name2_idx");

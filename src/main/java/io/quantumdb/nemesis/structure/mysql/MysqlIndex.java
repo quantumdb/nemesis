@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.postgresql;
+package io.quantumdb.nemesis.structure.mysql;
 
 import java.sql.SQLException;
 
@@ -10,15 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString
 @EqualsAndHashCode
-class PostgresIndex implements Index {
+class MysqlIndex implements Index {
 
-	private final PostgresTable parent;
+	private final MysqlTable parent;
 	private final String name;
 
 	private final boolean unique;
 	private final boolean primary;
 
-	PostgresIndex(PostgresTable parent, String name, boolean unique, boolean primary) {
+	MysqlIndex(MysqlTable parent, String name, boolean unique, boolean primary) {
 		this.parent = parent;
 		this.name = name;
 		this.unique = unique;
@@ -31,7 +31,7 @@ class PostgresIndex implements Index {
 	}
 
 	@Override
-	public PostgresTable getParent() {
+	public MysqlTable getParent() {
 		return parent;
 	}
 
@@ -47,12 +47,12 @@ class PostgresIndex implements Index {
 
 	@Override
 	public void rename(String name) throws SQLException {
-		execute(String.format("ALTER INDEX %s RENAME TO %s", this.name, name));
+		throw new UnsupportedOperationException("Mysql 5.5 does not support renaming indices.");
 	}
 
 	@Override
 	public void drop() throws SQLException {
-		execute(String.format("DROP INDEX CONCURRENTLY %s", name));
+		execute(String.format("ALTER TABLE %s DROP INDEX %s", parent.getName(), name));
 	}
 
 	private void execute(String query) throws SQLException {

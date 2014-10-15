@@ -29,5 +29,10 @@ public class NamedOperation implements Operation {
 	public void cleanup(Database backend) throws SQLException {
 		operation.cleanup(backend);
 	}
-	
+
+	@Override
+	public boolean isSupportedBy(Database backend) {
+		return operation.isSupportedBy(backend);
+	}
+
 }

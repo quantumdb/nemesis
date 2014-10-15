@@ -45,9 +45,8 @@ public class Launcher {
 						setCredentials(reader, Database.Type.POSTGRESQL);
 						break;
 					case 2:
-//						setCredentials(reader, Database.Type.MYSQL);
-						throw new UnsupportedOperationException();
-//						break;
+						setCredentials(reader, Database.Type.MYSQL);
+						break;
 					case 3:
 						return;
 					default:

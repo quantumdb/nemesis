@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.postgresql;
+package io.quantumdb.nemesis.structure.mysql;
 
 import java.sql.SQLException;
 
@@ -10,14 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString
 @EqualsAndHashCode
-class PostgresConstraint implements Constraint {
+class MysqlConstraint implements Constraint {
 
-	private final PostgresTable parent;
+	private final MysqlTable parent;
 	private final String name;
 	private final String type;
 	private final String expression;
 
-	PostgresConstraint(PostgresTable parent, String name, String type, String expression) {
+	MysqlConstraint(MysqlTable parent, String name, String type, String expression) {
 		this.parent = parent;
 		this.name = name;
 		this.type = type;
@@ -30,7 +30,7 @@ class PostgresConstraint implements Constraint {
 	}
 
 	@Override
-	public PostgresTable getParent() {
+	public MysqlTable getParent() {
 		return parent;
 	}
 
