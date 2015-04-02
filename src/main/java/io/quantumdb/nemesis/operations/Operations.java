@@ -6,7 +6,6 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
 import io.quantumdb.nemesis.structure.Database;
-import io.quantumdb.nemesis.structure.ForeignKey;
 import io.quantumdb.nemesis.structure.TableDefinition;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,8 +17,8 @@ public class Operations {
 	public static List<NamedOperation> all() {
 		return Lists.newArrayList(
 				createIndexOnColumn(),
-				dropIndexOnColumn(),
 				renameIndexOnColumn(),
+				dropIndexOnColumn(),
 				addNullableColumn(),
 				addNonNullableColumn(),
 				dropNullableColumn(),
@@ -34,8 +33,33 @@ public class Operations {
 				makeColumnNullable(),
 				makeColumnNonNullable(),
 				addNonNullableForeignKey(),
-				addNullableForeignKey()
+				addNullableForeignKey(),
+				renameTable()
 		);
+	}
+
+	private static NamedOperation renameTable() {
+		return new NamedOperation("rename-table", new Operation() {
+			public void prepare(Database backend) throws SQLException {
+				TableDefinition table = new TableDefinition("users_v2")
+						.withColumn(new ColumnDefinition("id", "bigint")
+								.setNullable(false)
+								.setAutoIncrement(true)
+								.setIdentity(true))
+						.withColumn(new ColumnDefinition("name", "varchar(255)")
+								.setNullable(false));
+
+				backend.createTable(table);
+			}
+
+			public void perform(Database backend) throws SQLException {
+				backend.atomicTableRename("users_v2", "users", "users_v1");
+			}
+
+			public void cleanup(Database backend) throws SQLException {
+				backend.atomicTableRename("users_v1", "users", "users_v2");
+			}
+		});
 	}
 
 	public static NamedOperation addNullableColumn() {

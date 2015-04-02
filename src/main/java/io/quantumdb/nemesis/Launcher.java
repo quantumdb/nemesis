@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Launcher {
 
-	private static final int ROWS = 100_000_000;
-	private static final int STARTUP_TIMEOUT = 5000;
-	private static final int TEARDOWN_TIMEOUT = 5000;
+	private static final int ROWS = 50_000_000;
+	private static final int STARTUP_TIMEOUT = 60_000;
+	private static final int TEARDOWN_TIMEOUT = 60_000;
 
 	@SneakyThrows
 	public static void main(String[] args) {

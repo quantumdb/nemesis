@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.operations.NamedOperation;
@@ -48,7 +51,7 @@ public class Session {
 		List<Writer> writers = Lists.newArrayList();
 
 		try {
-			executor = new ScheduledThreadPoolExecutor(config.getTotalWorkers());
+			executor = new ScheduledThreadPoolExecutor(config.getTotalWorkers() + 1);
 
 			backend.connect(credentials);
 			operation.prepare(backend);
@@ -96,7 +99,25 @@ public class Session {
 
 			log.info("\tPerforming operation: {}...", operation.getName());
 			long startOp = System.currentTimeMillis() - start;
-			operation.perform(backend);
+
+			Future<?> future = executor.submit(() -> {
+				try {
+					operation.perform(backend);
+				}
+				catch (SQLException e) {
+					log.error(e.getMessage(), e);
+				}
+			});
+
+			try {
+				future.get(1, TimeUnit.MINUTES);
+			}
+			catch (ExecutionException e) {
+				log.error(e.getMessage(), e);
+			}
+			catch (TimeoutException e) {
+				future.cancel(true);
+			}
 
 			log.info("\tOperation: {} completed", operation.getName());
 			long endOp = System.currentTimeMillis() - start;
@@ -110,7 +131,7 @@ public class Session {
 			workers.stream().forEach(c -> c.stop());
 
 			executor.shutdown();
-			executor.awaitTermination(60, TimeUnit.SECONDS);
+			executor.awaitTermination(1, TimeUnit.MINUTES);
 			executor.shutdownNow();
 
 			for (Writer writer : writers) {

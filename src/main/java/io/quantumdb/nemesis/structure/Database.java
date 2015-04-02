@@ -60,6 +60,9 @@ public interface Database {
 		return false;
 	}
 
+	void atomicTableRename(String replacingTableName, String currentTableName, String archivedTableName) throws
+			SQLException;
+
 	List<Sequence> listSequences() throws SQLException;
 
 	void dropContents() throws SQLException;

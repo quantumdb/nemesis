@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.List;
 
@@ -73,6 +74,29 @@ public class PostgresDatabase implements Database {
 		}
 
 		return tables;
+	}
+
+	@Override
+	public void atomicTableRename(String replacingTableName, String currentTableName, String archivedTableName)
+			throws SQLException {
+
+		Savepoint save = null;
+		boolean autoCommit = false;
+		try {
+			autoCommit = connection.getAutoCommit();
+			connection.setAutoCommit(false);
+			save = connection.setSavepoint();
+
+			String query = "ALTER TABLE %s RENAME TO %s";
+			connection.createStatement().execute(String.format(query, currentTableName, archivedTableName));
+			connection.createStatement().execute(String.format(query, replacingTableName, currentTableName));
+
+			connection.commit();
+		}
+		catch (SQLException e) {
+			connection.rollback(save);
+			connection.setAutoCommit(autoCommit);
+		}
 	}
 
 	@Override

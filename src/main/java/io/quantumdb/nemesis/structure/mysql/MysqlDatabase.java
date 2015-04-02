@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.List;
 
@@ -72,6 +73,29 @@ public class MysqlDatabase implements Database {
 		}
 
 		return tables;
+	}
+
+	@Override
+	public void atomicTableRename(String replacingTableName, String currentTableName, String archivedTableName)
+			throws SQLException {
+
+		Savepoint save = null;
+		boolean autoCommit = false;
+		try {
+			autoCommit = connection.getAutoCommit();
+			connection.setAutoCommit(false);
+			save = connection.setSavepoint();
+
+			String query = "RENAME TABLE %s TO %s, %s TO %s";
+			String formatted = String.format(query, currentTableName, archivedTableName, replacingTableName, currentTableName);
+			connection.createStatement().execute(formatted);
+
+			connection.commit();
+		}
+		catch (SQLException e) {
+			connection.rollback(save);
+			connection.setAutoCommit(autoCommit);
+		}
 	}
 
 	@Override
