@@ -1,18 +1,14 @@
-package io.quantumdb.nemesis.structure.mysql;
+package io.quantumdb.nemesis.structure.mysql56;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.structure.Column;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
-import io.quantumdb.nemesis.structure.Constraint;
-import io.quantumdb.nemesis.structure.Index;
 import io.quantumdb.nemesis.structure.QueryBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -58,7 +54,7 @@ class MysqlColumn implements Column {
 
 	@Override
 	public void rename(String newName) throws SQLException {
-		execute(String.format("ALTER TABLE %s CHANGE COLUMN %s %s", parent.getName(), name,
+		execute(String.format("ALTER TABLE %s CHANGE COLUMN %s %s, ALGORITHM=INPLACE, LOCK=NONE", parent.getName(), name,
 				getDefinition(newName, type, nullable, autoIncrement, defaultExpression)));
 		this.name = newName;
 	}
@@ -75,7 +71,7 @@ class MysqlColumn implements Column {
 
 	@Override
 	public void setType(String newType) throws SQLException {
-		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s", parent.getName(),
+		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s, LOCK=NONE", parent.getName(),
 				getDefinition(name, newType, nullable, autoIncrement, defaultExpression)));
 
 		this.type = newType;
@@ -88,7 +84,7 @@ class MysqlColumn implements Column {
 
 	@Override
 	public void setNullable(boolean isNullable) throws SQLException {
-		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s", parent.getName(),
+		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s, LOCK=SHARED", parent.getName(),
 				getDefinition(name, type, isNullable, autoIncrement, defaultExpression)));
 
 		this.nullable = isNullable;
@@ -105,7 +101,7 @@ class MysqlColumn implements Column {
 			newExpression = null;
 		}
 
-		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s", parent.getName(),
+		execute(String.format("ALTER TABLE %s MODIFY COLUMN %s, ALGORITHM=INPLACE, LOCK=NONE", parent.getName(),
 				getDefinition(name, type, nullable, autoIncrement, newExpression)));
 
 		this.defaultExpression = newExpression;
@@ -127,7 +123,7 @@ class MysqlColumn implements Column {
 			identityColumns.add(name);
 		}
 
-		execute(String.format("ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY(%s);", getParent().getName(),
+		execute(String.format("ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY(%s), ALGORITHM=INPLACE, LOCK=NONE;", getParent().getName(),
 				Joiner.on(',').join(identityColumns)));
 
 		this.identity = identity;
@@ -140,7 +136,12 @@ class MysqlColumn implements Column {
 
 	@Override
 	public void drop() throws SQLException {
-		execute(String.format("ALTER TABLE %s DROP COLUMN %s", parent.getName(), name));
+		if (isIdentity()) {
+			execute(String.format("ALTER TABLE %s DROP COLUMN %s, LOCK=NONE", parent.getName(), name));
+		}
+		else {
+			execute(String.format("ALTER TABLE %s DROP COLUMN %s, ALGORITHM=INPLACE, LOCK=NONE", parent.getName(), name));
+		}
 	}
 
 	private void execute(String query) throws SQLException {

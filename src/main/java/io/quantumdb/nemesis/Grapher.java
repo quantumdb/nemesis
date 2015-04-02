@@ -17,7 +17,7 @@ public class Grapher {
 	private static final int SKIP_UNTIL = 45_000;
 	private static final int PADDING = 20;
 	private static final int WIDTH = 1000;
-	private static final int HEIGHT = 150;
+	private static final int HEIGHT = 60;
 	private static final int SCALE = 30;  // Pixels per second
 
 //	private static final int SKIP_UNTIL = 0;
@@ -29,10 +29,9 @@ public class Grapher {
 	private static final int RESOLUTION = (1000 / SCALE);
 	private static final int LIMIT = WIDTH * RESOLUTION + SKIP_UNTIL;
 
-	private static final File DIR = new File("/Users/michael/logs/MYSQL/");
-
 	public static void main(String[] args) throws IOException {
-		File[] scenarios = DIR.listFiles(file -> file.isDirectory() && !file.getName().startsWith(".") && !file.getName().startsWith("_"));
+		File dir = new File(args[0]);
+		File[] scenarios = dir.listFiles(file -> file.isDirectory() && !file.getName().startsWith(".") && !file.getName().startsWith("_"));
 		for (File scenario : scenarios) {
 			new Grapher().graphResponseTimes(scenario);
 			log.info("Graphed: " + scenario.getAbsolutePath());
@@ -109,6 +108,7 @@ public class Grapher {
 		}
 
 		ImageIO.write(image, "png", new File(folder, folder.getName() + ".png"));
+		ImageIO.write(image, "png", new File(new File(folder.getParent(), "graphs"), folder.getName() + ".png"));
 	}
 
 	private int toX(long x) {
