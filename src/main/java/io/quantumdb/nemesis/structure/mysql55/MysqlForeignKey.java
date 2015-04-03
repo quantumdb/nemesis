@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.mysql;
+package io.quantumdb.nemesis.structure.mysql55;
 
 import java.sql.SQLException;
 

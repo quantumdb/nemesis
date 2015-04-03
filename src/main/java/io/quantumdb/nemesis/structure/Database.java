@@ -4,16 +4,21 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import io.quantumdb.nemesis.structure.mysql.MysqlDatabase;
 import io.quantumdb.nemesis.structure.postgresql.PostgresDatabase;
 
 public interface Database {
 
 	public enum Type {
-		MYSQL {
+		MYSQL_56 {
 			@Override
 			public Database createBackend() {
-				return new MysqlDatabase();
+				return new io.quantumdb.nemesis.structure.mysql56.MysqlDatabase();
+			}
+		},
+		MYSQL_55 {
+			@Override
+			public Database createBackend() {
+				return new io.quantumdb.nemesis.structure.mysql55.MysqlDatabase();
 			}
 		},
 		POSTGRESQL {

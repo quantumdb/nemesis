@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.mysql;
+package io.quantumdb.nemesis.structure.mysql56;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

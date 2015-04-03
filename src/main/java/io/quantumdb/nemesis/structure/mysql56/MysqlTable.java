@@ -1,4 +1,4 @@
-package io.quantumdb.nemesis.structure.mysql;
+package io.quantumdb.nemesis.structure.mysql56;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -79,7 +79,7 @@ class MysqlTable implements Table {
 	@Override
 	public Column addColumn(ColumnDefinition column) throws SQLException {
 		if (column.isAutoIncrement() && listColumns().stream().filter(Column::isIdentity).count() > 0) {
-			throw new UnsupportedOperationException("Mysql 5.5 does not support auto increment on non primary key.");
+			throw new UnsupportedOperationException("Mysql 5.6 does not support auto increment on non primary key.");
 		}
 
 		QueryBuilder queryBuilder = new QueryBuilder();
@@ -97,6 +97,7 @@ class MysqlTable implements Table {
 			queryBuilder.append(" DEFAULT " + column.getDefaultExpression());
 		}
 
+		queryBuilder.append(", ALGORITHM=INPLACE, LOCK=NONE");
 		execute(queryBuilder.toString());
 
 		MysqlColumn created = new MysqlColumn(connection, this, column);
@@ -132,10 +133,10 @@ class MysqlTable implements Table {
 	public Index createIndex(String name, boolean unique, String... columnNames) throws SQLException {
 		String columns = Joiner.on(',').join(columnNames);
 		if (unique) {
-			execute(String.format("CREATE UNIQUE INDEX %s ON %s (%s)", name, this.name, columns));
+			execute(String.format("CREATE UNIQUE INDEX %s ON %s (%s) ALGORITHM=INPLACE", name, this.name, columns));
 		}
 		else {
-			execute(String.format("CREATE INDEX %s ON %s (%s)", name, this.name, columns));
+			execute(String.format("CREATE INDEX %s ON %s (%s) ALGORITHM=INPLACE", name, this.name, columns));
 		}
 		return new MysqlIndex(this, name, unique, false);
 	}
@@ -198,7 +199,7 @@ class MysqlTable implements Table {
 	public ForeignKey addForeignKey(String constraint, String[] columns, String referencedTable, String[] referencedColumns)
 			throws SQLException {
 
-		execute(String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)", name, constraint,
+		execute(String.format("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s), LOCK=SHARED", name, constraint,
 				Joiner.on(',').join(columns), referencedTable, Joiner.on(',').join(referencedColumns)));
 
 		return new MysqlForeignKey(this, constraint);

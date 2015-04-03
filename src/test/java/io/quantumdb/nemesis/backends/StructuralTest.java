@@ -7,6 +7,8 @@ import java.util.List;
 import com.google.common.base.Strings;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
 import io.quantumdb.nemesis.structure.Database;
+import io.quantumdb.nemesis.structure.Database.Feature;
+import io.quantumdb.nemesis.structure.Database.Type;
 import io.quantumdb.nemesis.structure.DatabaseCredentials;
 import io.quantumdb.nemesis.structure.Table;
 import io.quantumdb.nemesis.structure.TableDefinition;
@@ -28,9 +30,11 @@ public class StructuralTest {
 	@Parameterized.Parameters(name = "{index} - {0}")
 	public static List<Object[]> listParameters() {
 		return Arrays.asList(new Object[][] {
-				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
+				{ Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
 						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler")) },
-				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+				{ Type.MYSQL_55, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) },
+				{ Type.MYSQL_56, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
 						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) }
 		});
 	}
@@ -211,6 +215,8 @@ public class StructuralTest {
 
 	@Test
 	public void testMakingColumnAnIdentityColumn() throws SQLException {
+		Assume.assumeTrue(database.supports(Feature.MULTIPLE_AUTO_INCREMENT_COLUMNS));
+
 		testTableCreation();
 		database.getTable(TABLE_NAME)
 				.getColumn("name")

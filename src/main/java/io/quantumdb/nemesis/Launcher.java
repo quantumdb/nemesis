@@ -8,6 +8,7 @@ import io.quantumdb.nemesis.profiler.DatabaseStructure;
 import io.quantumdb.nemesis.profiler.Profiler;
 import io.quantumdb.nemesis.profiler.ProfilerConfig;
 import io.quantumdb.nemesis.structure.Database;
+import io.quantumdb.nemesis.structure.Database.Type;
 import io.quantumdb.nemesis.structure.DatabaseCredentials;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,9 @@ public class Launcher {
 		while (true) {
 			System.out.println("\nType of database?\n");
 			System.out.println("  1. PostgreSQL.");
-			System.out.println("  2. MySQL.");
-			System.out.println("  3. Exit.");
+			System.out.println("  2. MySQL 5.5.");
+			System.out.println("  3. MySQL 5.6.");
+			System.out.println("  4. Exit.");
 			System.out.println("");
 			System.out.print("Option: ");
 
@@ -42,12 +44,15 @@ public class Launcher {
 
 				switch (option) {
 					case 1:
-						setCredentials(reader, Database.Type.POSTGRESQL);
+						setCredentials(reader, Type.POSTGRESQL);
 						break;
 					case 2:
-						setCredentials(reader, Database.Type.MYSQL);
+						setCredentials(reader, Type.MYSQL_55);
 						break;
 					case 3:
+						setCredentials(reader, Type.MYSQL_56);
+						break;
+					case 4:
 						return;
 					default:
 						System.err.println("You must choose an option in range [1..3]");

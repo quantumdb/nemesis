@@ -10,6 +10,7 @@ import io.quantumdb.nemesis.profiler.DatabaseStructure;
 import io.quantumdb.nemesis.profiler.Profiler;
 import io.quantumdb.nemesis.profiler.ProfilerConfig;
 import io.quantumdb.nemesis.structure.Database;
+import io.quantumdb.nemesis.structure.Database.Type;
 import io.quantumdb.nemesis.structure.DatabaseCredentials;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -23,9 +24,11 @@ public class BackendTest {
 	@Parameterized.Parameters(name = "{index}: type={0}")
 	public static Collection<?> getBackends() {
 		return Arrays.asList(new Object[][] {
-				{ Database.Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
+				{ Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
 						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler"))},
-				{ Database.Type.MYSQL, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+				{ Type.MYSQL_55, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) },
+				{ Type.MYSQL_56, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
 						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) }
 		});
 	}
