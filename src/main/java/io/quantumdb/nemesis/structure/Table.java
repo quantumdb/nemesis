@@ -67,6 +67,8 @@ public interface Table {
 
 	List<ForeignKey> listForeignKeys() throws SQLException;
 
+	List<Trigger> listTriggers() throws SQLException;
+
 	default ForeignKey getForeignKey(String name) throws SQLException {
 		return listForeignKeys().stream()
 				.filter(fk -> fk.getName().equals(name))

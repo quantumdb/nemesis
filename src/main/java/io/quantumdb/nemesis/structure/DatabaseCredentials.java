@@ -9,6 +9,7 @@ import lombok.Data;
 public class DatabaseCredentials {
 
 	private final String url;
+	private final String database;
 	private final String username;
 	private final String password;
 

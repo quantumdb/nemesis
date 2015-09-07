@@ -7,7 +7,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -15,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 public class Grapher {
 
 	private static final int SKIP_UNTIL = 45_000;
-	private static final int PADDING = 20;
-	private static final int WIDTH = 1000;
+	private static final int PADDING = 5;
+	private static final int WIDTH = 901;
 	private static final int HEIGHT = 60;
 	private static final int SCALE = 30;  // Pixels per second
 
@@ -44,8 +48,8 @@ public class Grapher {
 
 	private void drawSplit(File folder) throws IOException {
 		BufferedImage image = new BufferedImage(
-				WIDTH + 2 * PADDING,
-				HEIGHT + 2 * PADDING,
+				WIDTH,
+				HEIGHT + PADDING,
 				BufferedImage.TYPE_USHORT_555_RGB);
 
 		Graphics graphics = image.getGraphics();
@@ -54,13 +58,17 @@ public class Grapher {
 		graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
 
 		File[] logFiles = folder.listFiles((dir, name) -> name.endsWith(".log"));
-		for (File file : logFiles) {
+		ArrayList<File> files = Lists.newArrayList(logFiles);
+		Collections.sort(files);
+
+		AtomicReference<String> type = new AtomicReference<>();
+		for (File file : files) {
 			parse(file, line -> {
 				long x = getQueryStart(line);
 				if (x < SKIP_UNTIL) {
 					return true;
 				}
-				if (x > LIMIT) {
+				if (x > LIMIT + 1000) {
 					return false;
 				}
 
@@ -71,7 +79,12 @@ public class Grapher {
 				int y = queryDuration;
 				if (queryType.equals("Operation")) {
 					graphics.setColor(new Color(0f, 0f, 0f, 0.2f));
-					graphics.fillRect(toX(x) + PADDING, PADDING, Math.min(WIDTH - toX(x) + PADDING, toX(queryDuration + SKIP_UNTIL)), toY(image.getHeight()) - 2 * PADDING + 1);
+					graphics.fillRect(toX(x), 0, Math.min(WIDTH - toX(x), toX(queryDuration + SKIP_UNTIL)), toY(image.getHeight()) - PADDING + 1);
+				}
+
+				if (!queryType.equals(type.get())) {
+					type.set(queryType);
+					log.info("Drawing: {}", type.get());
 				}
 
 				switch (queryType) {
@@ -94,17 +107,17 @@ public class Grapher {
 						throw new IllegalArgumentException("Wrong argument: " + queryType);
 				}
 
-				graphics.drawLine(toX(x) + PADDING, toY(Math.max(0, image.getHeight() - y)) - PADDING, toX(x) + PADDING, toY(image.getHeight()) - PADDING);
+				graphics.drawLine(toX(x), toY(Math.max(0, image.getHeight() - y)) - PADDING, toX(x), toY(image.getHeight()) - PADDING);
 				return true;
 			});
 		}
 
 		graphics.setColor(Color.BLACK);
-		graphics.drawLine(PADDING - 1, HEIGHT + PADDING + 1, WIDTH + PADDING, HEIGHT + PADDING + 1);
-		graphics.drawLine(PADDING - 1, PADDING, PADDING - 1, HEIGHT + PADDING + 1);
+		graphics.drawLine(1, HEIGHT, WIDTH, HEIGHT);
+//		graphics.drawLine(1, PADDING, 1, HEIGHT);
 
 		for (int i = 0; i <= WIDTH; i += SCALE) {
-			graphics.drawLine(PADDING + i, HEIGHT + PADDING + 1, PADDING + i, HEIGHT + PADDING + 5);
+			graphics.drawLine(i, HEIGHT, i, HEIGHT + 4);
 		}
 
 		ImageIO.write(image, "png", new File(folder, folder.getName() + ".png"));

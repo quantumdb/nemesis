@@ -17,6 +17,7 @@ import io.quantumdb.nemesis.structure.ForeignKey;
 import io.quantumdb.nemesis.structure.Index;
 import io.quantumdb.nemesis.structure.QueryBuilder;
 import io.quantumdb.nemesis.structure.Table;
+import io.quantumdb.nemesis.structure.Trigger;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -193,6 +194,12 @@ class MysqlTable implements Table {
 			}
 		}
 		return foreignKeys;
+	}
+
+	@Override
+	public List<Trigger> listTriggers() throws SQLException {
+		// TODO: Add support for listing triggers.
+		return Lists.newArrayList();
 	}
 
 	@Override

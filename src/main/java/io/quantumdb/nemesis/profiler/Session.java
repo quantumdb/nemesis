@@ -2,15 +2,12 @@ package io.quantumdb.nemesis.profiler;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.operations.NamedOperation;
@@ -37,7 +34,7 @@ public class Session {
 		this.teardownTimeout = teardownTimeout;
 	}
 
-	public File start(NamedOperation operation) throws IOException, InterruptedException, SQLException {
+	public File start(NamedOperation operation) throws Exception {
 		File folder = null;
 		ScheduledThreadPoolExecutor executor = null;
 		Database backend = type.createBackend();
@@ -104,19 +101,16 @@ public class Session {
 				try {
 					operation.perform(backend);
 				}
-				catch (SQLException e) {
+				catch (Exception e) {
 					log.error(e.getMessage(), e);
 				}
 			});
 
 			try {
-				future.get(1, TimeUnit.MINUTES);
+				future.get();
 			}
 			catch (ExecutionException e) {
 				log.error(e.getMessage(), e);
-			}
-			catch (TimeoutException e) {
-				future.cancel(true);
 			}
 
 			log.info("\tOperation: {} completed", operation.getName());

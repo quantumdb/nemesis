@@ -7,14 +7,11 @@ import com.google.common.collect.Lists;
 import io.quantumdb.nemesis.structure.ColumnDefinition;
 import io.quantumdb.nemesis.structure.Database;
 import io.quantumdb.nemesis.structure.TableDefinition;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Operations {
+public class DefaultOperations {
 
-	public static List<NamedOperation> all() {
+	public List<NamedOperation> all() {
 		return Lists.newArrayList(
 				createIndexOnColumn(),
 				renameIndexOnColumn(),
@@ -38,7 +35,7 @@ public class Operations {
 		);
 	}
 
-	private static NamedOperation renameTable() {
+	private NamedOperation renameTable() {
 		return new NamedOperation("rename-table", new Operation() {
 			public void prepare(Database backend) throws SQLException {
 				TableDefinition table = new TableDefinition("users_v2")
@@ -62,7 +59,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation addNullableColumn() {
+	public NamedOperation addNullableColumn() {
 		return new NamedOperation("add-nullable-column", new Operation() {
 
 			@Override
@@ -77,7 +74,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation addNonNullableColumn() {
+	public NamedOperation addNonNullableColumn() {
 		return new NamedOperation("add-non-nullable-column", new Operation() {
 
 			@Override
@@ -94,7 +91,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation dropNullableColumn() {
+	public NamedOperation dropNullableColumn() {
 		return new NamedOperation("drop-nullable-column", new Operation() {
 
 			@Override
@@ -109,7 +106,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation dropNonNullableColumn() {
+	public NamedOperation dropNonNullableColumn() {
 		return new NamedOperation("drop-non-nullable-column", new Operation() {
 
 			@Override
@@ -126,7 +123,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation renameNullableColumn() {
+	public NamedOperation renameNullableColumn() {
 		return new NamedOperation("rename-nullable-column", new Operation() {
 
 			@Override
@@ -146,7 +143,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation renameNonNullableColumn() {
+	public NamedOperation renameNonNullableColumn() {
 		return new NamedOperation("rename-non-nullable-column", new Operation() {
 
 			@Override
@@ -168,7 +165,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation createIndexOnColumn() {
+	public NamedOperation createIndexOnColumn() {
 		return new NamedOperation("create-index-on-column", new Operation() {
 
 			@Override
@@ -183,7 +180,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation dropIndexOnColumn() {
+	public NamedOperation dropIndexOnColumn() {
 		return new NamedOperation("drop-index-on-column", new Operation() {
 
 			@Override
@@ -198,7 +195,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation renameIndexOnColumn() {
+	public NamedOperation renameIndexOnColumn() {
 		return new NamedOperation("rename-index", new Operation() {
 
 			@Override
@@ -223,7 +220,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation modifyDataTypeOnNullableColumn() {
+	public NamedOperation modifyDataTypeOnNullableColumn() {
 		return new NamedOperation("modify-data-type-on-nullable-column", new Operation() {
 
 			@Override
@@ -243,7 +240,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation modifyDataTypeOnNonNullableColumn() {
+	public NamedOperation modifyDataTypeOnNonNullableColumn() {
 		return new NamedOperation("modify-data-type-on-non-nullable-column", new Operation() {
 
 			@Override
@@ -270,7 +267,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation modifyDataTypeFromIntToText() {
+	public NamedOperation modifyDataTypeFromIntToText() {
 		return new NamedOperation("modify-data-type-from-int-to-text", new Operation() {
 
 			@Override
@@ -297,7 +294,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation setDefaultExpressionOnNullableColumn() {
+	public NamedOperation setDefaultExpressionOnNullableColumn() {
 		return new NamedOperation("set-default-expression-on-nullable-column", new Operation() {
 
 			@Override
@@ -318,7 +315,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation setDefaultExpressionOnNonNullableColumn() {
+	public NamedOperation setDefaultExpressionOnNonNullableColumn() {
 		return new NamedOperation("set-default-expression-on-non-nullable-column", new Operation() {
 
 			@Override
@@ -340,7 +337,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation makeColumnNullable() {
+	public NamedOperation makeColumnNullable() {
 		return new NamedOperation("make-column-nullable", new Operation() {
 
 			@Override
@@ -357,7 +354,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation makeColumnNonNullable() {
+	public NamedOperation makeColumnNonNullable() {
 		return new NamedOperation("make-column-non-nullable", new Operation() {
 
 			@Override
@@ -372,7 +369,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation addNonNullableForeignKey() {
+	public NamedOperation addNonNullableForeignKey() {
 		return new NamedOperation("add-non-nullable-foreign-key", new Operation() {
 
 			@Override
@@ -407,7 +404,7 @@ public class Operations {
 		});
 	}
 
-	public static NamedOperation addNullableForeignKey() {
+	public NamedOperation addNullableForeignKey() {
 		return new NamedOperation("add-nullable-foreign-key", new Operation() {
 
 			@Override

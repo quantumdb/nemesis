@@ -1,7 +1,5 @@
 package io.quantumdb.nemesis.operations;
 
-import java.sql.SQLException;
-
 import io.quantumdb.nemesis.structure.Database;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -16,17 +14,17 @@ public class NamedOperation implements Operation {
 	private final Operation operation;
 	
 	@Override
-	public void perform(Database backend) throws SQLException {
+	public void perform(Database backend) throws Exception {
 		operation.perform(backend);
 	}
 	
 	@Override
-	public void prepare(Database backend) throws SQLException {
+	public void prepare(Database backend) throws Exception {
 		operation.prepare(backend);
 	}
-	
+
 	@Override
-	public void cleanup(Database backend) throws SQLException {
+	public void cleanup(Database backend) throws Exception {
 		operation.cleanup(backend);
 	}
 

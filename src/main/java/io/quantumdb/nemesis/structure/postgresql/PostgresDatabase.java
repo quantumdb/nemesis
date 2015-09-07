@@ -28,16 +28,23 @@ import lombok.extern.slf4j.Slf4j;
 public class PostgresDatabase implements Database {
 
 	private Connection connection;
+	private DatabaseCredentials credentials;
 
 	public void connect(DatabaseCredentials credentials) throws SQLException {
 		try {
 			Class.forName("org.postgresql.Driver");
-			this.connection = DriverManager.getConnection(credentials.getUrl(),
+			this.connection = DriverManager.getConnection(credentials.getUrl() + "/" + credentials.getDatabase(),
 					credentials.getUsername(), credentials.getPassword());
+			this.credentials = credentials;
 		}
 		catch (ClassNotFoundException e) {
 			throw new SQLException(e);
 		}
+	}
+
+	@Override
+	public DatabaseCredentials getCredentials() {
+		return credentials;
 	}
 
 	@Override
@@ -121,6 +128,11 @@ public class PostgresDatabase implements Database {
 		for (Sequence sequence : listSequences()) {
 			sequence.drop();
 		}
+	}
+
+	@Override
+	public Database getSetupDelegate() {
+		return this;
 	}
 
 	@Override

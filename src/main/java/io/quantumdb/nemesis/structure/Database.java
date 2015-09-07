@@ -39,6 +39,7 @@ public interface Database {
 	}
 
 	void connect(DatabaseCredentials credentials) throws SQLException;
+	DatabaseCredentials getCredentials();
 	void close() throws SQLException;
 
 	boolean supports(Feature feature);
@@ -71,6 +72,7 @@ public interface Database {
 	List<Sequence> listSequences() throws SQLException;
 
 	void dropContents() throws SQLException;
+	Database getSetupDelegate();
 
 	void query(String query) throws SQLException;
 	Connection getConnection();

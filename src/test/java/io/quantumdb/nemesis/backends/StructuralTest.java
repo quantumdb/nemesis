@@ -30,11 +30,11 @@ public class StructuralTest {
 	@Parameterized.Parameters(name = "{index} - {0}")
 	public static List<Object[]> listParameters() {
 		return Arrays.asList(new Object[][] {
-				{ Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost/profiler",
+				{ Type.POSTGRESQL, new DatabaseCredentials("jdbc:postgresql://localhost", "profiler",
 						get("PG_USER", "profiler"), get("PG_PASSWORD", "profiler")) },
-				{ Type.MYSQL_55, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+				{ Type.MYSQL_55, new DatabaseCredentials("jdbc:mysql://localhost", "nemesis",
 						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) },
-				{ Type.MYSQL_56, new DatabaseCredentials("jdbc:mysql://localhost/nemesis",
+				{ Type.MYSQL_56, new DatabaseCredentials("jdbc:mysql://localhost", "nemesis",
 						get("MYSQL_USER", "root"), get("MYSQL_PASSWORD", "root")) }
 		});
 	}

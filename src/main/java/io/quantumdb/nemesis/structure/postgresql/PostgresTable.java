@@ -19,6 +19,7 @@ import io.quantumdb.nemesis.structure.Index;
 import io.quantumdb.nemesis.structure.QueryBuilder;
 import io.quantumdb.nemesis.structure.Sequence;
 import io.quantumdb.nemesis.structure.Table;
+import io.quantumdb.nemesis.structure.Trigger;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -261,6 +262,24 @@ class PostgresTable implements Table {
 			}
 		}
 		return foreignKeys;
+	}
+
+	@Override
+	public List<Trigger> listTriggers() throws SQLException {
+		String query = "SELECT tgname FROM pg_trigger JOIN pg_class ON tgrelid = pg_class.oid WHERE relname = ?";
+
+		List<Trigger> triggers = Lists.newArrayList();
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			statement.setString(1, name);
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+				String triggerName = resultSet.getString("tgname");
+				triggers.add(new PostgresTrigger(this, triggerName));
+			}
+		}
+
+		return triggers;
 	}
 
 	@Override

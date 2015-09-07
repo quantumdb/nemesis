@@ -3,7 +3,11 @@ package io.quantumdb.nemesis;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
+import io.quantumdb.nemesis.operations.DefaultOperations;
+import io.quantumdb.nemesis.operations.NamedOperation;
+import io.quantumdb.nemesis.operations.QuantumDbOperations;
 import io.quantumdb.nemesis.profiler.DatabaseStructure;
 import io.quantumdb.nemesis.profiler.Profiler;
 import io.quantumdb.nemesis.profiler.ProfilerConfig;
@@ -55,6 +59,55 @@ public class Launcher {
 					case 4:
 						return;
 					default:
+						System.err.println("You must choose an option in range [1..4]");
+				}
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+			catch (NumberFormatException e) {
+				System.err.println("You must choose an option in range [1..4]");
+			}
+		}
+	}
+
+	private static void setCredentials(BufferedReader reader, Database.Type type)
+			throws InterruptedException, IOException {
+
+		String url      = ask("JDBC url: ", reader);
+		String database = ask("database: ", reader);
+		String username = ask("Username: ", reader);
+		String password = ask("Password: ", reader);
+
+		DatabaseCredentials credentials = new DatabaseCredentials(url, database, username, password);
+		selectMethod(reader, type, credentials);
+	}
+
+	private static void selectMethod(BufferedReader reader, Type type, DatabaseCredentials credentials) throws
+			IOException {
+		while (true) {
+			System.out.println("\nMethod of upgrading?\n");
+			System.out.println("  1. Naive.");
+			System.out.println("  2. QuantumDB.");
+			System.out.println("  3. Exit.");
+			System.out.println("");
+			System.out.print("Option: ");
+
+			try {
+				int option = Integer.parseInt(reader.readLine().trim());
+				System.out.println("");
+
+				switch (option) {
+					case 1:
+						prepareProfiling(reader, type, credentials, false);
+						break;
+					case 2:
+						prepareProfiling(reader, type, credentials, true);
+						break;
+					case 3:
+						return;
+					default:
 						System.err.println("You must choose an option in range [1..3]");
 				}
 			}
@@ -68,19 +121,8 @@ public class Launcher {
 		}
 	}
 
-	private static void setCredentials(BufferedReader reader, Database.Type type)
-			throws InterruptedException, IOException {
-
-		String url      = ask("JDBC url: ", reader);
-		String username = ask("Username: ", reader);
-		String password = ask("Password: ", reader);
-
-		DatabaseCredentials credentials = new DatabaseCredentials(url, username, password);
-		prepareProfiling(reader, type, credentials);
-	}
-
 	private static void prepareProfiling(BufferedReader reader, Database.Type type,
-			DatabaseCredentials credentials) throws InterruptedException {
+			DatabaseCredentials credentials, boolean useQuantumDb) throws InterruptedException {
 
 		while (true) {
 			System.out.println("\nWhat do you want to do?\n");
@@ -106,8 +148,12 @@ public class Launcher {
 						int updates = askWorkerQuantity("UPDATE", reader);
 
 						ProfilerConfig config = new ProfilerConfig(readers, updates, inserts, deletes);
+						List<NamedOperation> operations = new DefaultOperations().all();
+						if (useQuantumDb) {
+							operations = new QuantumDbOperations().all();
+						}
 
-						Profiler profiler = new Profiler(config, type, credentials, STARTUP_TIMEOUT, TEARDOWN_TIMEOUT);
+						Profiler profiler = new Profiler(config, type, credentials, operations, STARTUP_TIMEOUT, TEARDOWN_TIMEOUT);
 						profiler.profile();
 						break;
 					case 3:
